@@ -1,20 +1,21 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.Tilemaps;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] Animator animator;
+    public Animator animator;
     public float speed;
     public float jumpForce;
     private Rigidbody2D rb2d;
+
+    public bool canJump;
 
 
     private void Awake()
     {
         rb2d = gameObject.GetComponent<Rigidbody2D>();
-
     }
 
     private void MoveCharacter(float horizontal) {
@@ -37,8 +38,28 @@ public class PlayerController : MonoBehaviour
         transform.localScale = scale;
     }
 
+    void OnCollisionEnter2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = true;
 
-    private void FixedUpdate()
+        }
+    }
+
+
+
+    void OnCollisionExit2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = false;
+
+        }
+    }
+
+
+private void FixedUpdate()
     {
         //walk animation
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -65,17 +86,21 @@ public class PlayerController : MonoBehaviour
         }
 
         //jump 
-
         float jump = Input.GetAxisRaw("Vertical");
 
-        if (jump > 0)
+        if (jump > 0 && canJump)
         {
             animator.SetBool("Jump", true);
             rb2d.velocity = Vector2.up * jumpForce;
+
         }
-        else {
+        else
+        {
             animator.SetBool("Jump", false);
-        }
+        } 
+
+
+
 
     }
 }
