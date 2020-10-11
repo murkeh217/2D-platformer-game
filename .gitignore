@@ -143,3 +143,5 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 >>>>>>> 2d6987d8d47ccd97bea67a3416f5ee0ea29e0955
 /[Aa]ssets/[Ss]treamingAssets/aa/
+Packages/packages-lock.json
+Packages/manifest.json
