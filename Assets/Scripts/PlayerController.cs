@@ -1,20 +1,27 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] Animator animator;
+    public Animator animator;
     public float speed;
     public float jumpForce;
-    private Rigidbody2D rb2d;
+    public Rigidbody2D rb2d;
+    public bool canJump;
+    public ScoreController scoreController;
+    public GameOverController gameOverController;
 
 
-    private void Awake()
+    public void killPlayer()
     {
-        rb2d = gameObject.GetComponent<Rigidbody2D>();
+        animator.SetBool("Death", true);
+        gameOverController.PlayerDied();
+        this.enabled = false;
+    }
 
+
+    public void pickUpKey()
+    {
+        scoreController.IncreaseScore(5);
     }
 
     private void MoveCharacter(float horizontal) {
@@ -37,8 +44,28 @@ public class PlayerController : MonoBehaviour
         transform.localScale = scale;
     }
 
+    void OnCollisionEnter2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = true;
 
-    private void FixedUpdate()
+        }
+    }
+
+
+
+    void OnCollisionExit2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = false;
+
+        }
+    }
+
+
+private void FixedUpdate()
     {
         //walk animation
         float horizontal = Input.GetAxisRaw("Horizontal");
@@ -65,17 +92,18 @@ public class PlayerController : MonoBehaviour
         }
 
         //jump 
-
         float jump = Input.GetAxisRaw("Vertical");
 
-        if (jump > 0)
+        if (jump > 0 && canJump)
         {
             animator.SetBool("Jump", true);
             rb2d.velocity = Vector2.up * jumpForce;
-        }
-        else {
-            animator.SetBool("Jump", false);
-        }
 
-    }
+        }
+        else
+        {
+            animator.SetBool("Jump", false);
+        } 
+
+     }
 }
