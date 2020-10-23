@@ -1,26 +1,39 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Runtime.InteropServices.ComTypes;
 using UnityEngine;
-
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] Animator animator;
+    public Animator animator;
     public float speed;
     public float jumpForce;
-    private Rigidbody2D rb2d;
+    public Rigidbody2D rb2d;
+    public bool canJump;
+    public ScoreController scoreController;
+    public GameOverController gameOverController;
+    public ParticleSystem particleSystem;
+
+    private const float ctox = -0.10f, ctoy = 0.59f,  ctsx = 0.96f, ctsy = 1.30f, cfox = -0.01f, cfoy = 0.99f, cfsx = 0.45f, cfsy = 2.02f;
 
 
-    private void Awake()
+    public void KillPlayer()
     {
-        rb2d = gameObject.GetComponent<Rigidbody2D>();
+        particleSystem.Play();
+        animator.SetBool("Death", true);
+        gameOverController.PlayerDied();
+        this.enabled = false;
+    }
 
+
+    public void PickUpKey()
+    {
+        scoreController.IncreaseScore(5);
     }
 
     private void MoveCharacter(float horizontal) {
         Vector3 position = transform.position;
         position.x += horizontal * speed * Time.deltaTime;
         transform.position = position;
+        //AudioManager.Instance.Play(Sounds.PlayerMove);
     }
 
     private void PlayMovementAnimation(float horizontal) {
@@ -37,12 +50,30 @@ public class PlayerController : MonoBehaviour
         transform.localScale = scale;
     }
 
+    void OnCollisionEnter2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = true;
+        }
+    }
 
-    private void FixedUpdate()
+
+
+    void OnCollisionExit2D(Collision2D Other)
+    {
+        if (Other.collider.gameObject.tag == "Ground")
+        {
+            canJump = false;
+
+        }
+    }
+
+
+private void FixedUpdate()
     {
         //walk animation
         float horizontal = Input.GetAxisRaw("Horizontal");
-
         MoveCharacter(horizontal);
         PlayMovementAnimation(horizontal);
 
@@ -54,28 +85,27 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.LeftControl))
         {
             animator.SetBool("Crouch", true);
-            crouchCollider.offset = new Vector3(-0.1084875f,0.5984814f);
-            crouchCollider.size = new Vector3(0.9654864f,1.302302f);
+            crouchCollider.offset = new Vector3(ctox,ctoy);
+            crouchCollider.size = new Vector3(ctsx,ctsy);
         }
         else
         {
             animator.SetBool("Crouch", false);
-            crouchCollider.offset = new Vector3(-0.01487844f, 0.9900814f);
-            crouchCollider.size = new Vector3(0.4513782f, 2.020973f);
+            crouchCollider.offset = new Vector3(cfox,cfoy);
+            crouchCollider.size = new Vector3(cfsx,cfsy);
         }
 
         //jump 
-
         float jump = Input.GetAxisRaw("Vertical");
 
-        if (jump > 0)
+        if (jump > 0 && canJump)
         {
             animator.SetBool("Jump", true);
             rb2d.velocity = Vector2.up * jumpForce;
         }
-        else {
+        else
+        {
             animator.SetBool("Jump", false);
         }
-
-    }
+     }
 }
